@@ -12,24 +12,37 @@ import {
   ListItem,
   TextField,
   Button,
+  Modal,
   Chip,
 } from "@mui/material";
 import FavoriteIcon from "@mui/icons-material/Favorite";
 import HeartBrokenIcon from "@mui/icons-material/HeartBroken";
 import PetsIcon from "@mui/icons-material/Pets";
-import imageLoading from './assets/loading.gif';
+import imageLoading from "./assets/loading.gif";
 import uniqid from "uniqid";
-import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
-import ArrowBackIosIcon from '@mui/icons-material/ArrowBackIos';
-import Accordion from '@mui/material/Accordion';
-import AccordionSummary from '@mui/material/AccordionSummary';
-import AccordionDetails from '@mui/material/AccordionDetails';
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import Tooltip from '@mui/material/Tooltip';
+import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
+import ArrowBackIosIcon from "@mui/icons-material/ArrowBackIos";
+import Accordion from "@mui/material/Accordion";
+import AccordionSummary from "@mui/material/AccordionSummary";
+import AccordionDetails from "@mui/material/AccordionDetails";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import Tooltip from "@mui/material/Tooltip";
 import { useQueryImagenes } from "./Queries/queryImagenes";
-import CircularProgress from '@mui/material/CircularProgress';
+import CircularProgress from "@mui/material/CircularProgress";
 import { DisplaySettings } from "@mui/icons-material";
-import { useMediaQuery } from '@mui/material';
+import { useMediaQuery } from "@mui/material";
+
+const style = {
+  position: 'absolute',
+  top: '50%',
+  left: '50%',
+  transform: 'translate(-50%, -50%)',
+  width: 400,
+  bgcolor: 'background.paper',
+  border: '2px solid #000',
+  boxShadow: 24,
+  p: 4,
+};
 
 function App() {
   const [listaRechazados, setListaRechazados] = useState([]);
@@ -37,7 +50,18 @@ function App() {
   const [listaRechaAux, setListaRechaAux] = useState([]);
   const [listaAcepAux, setListaAcepAux] = useState([]);
   const [buscador, setBuscador] = useState("");
-  const isXsScreen = useMediaQuery('(max-width:600px)');//para saber si la pantalla es pequeña
+  const [open, setOpen] = useState(false);
+  const handleOpen = () => setOpen(true);
+  const handleClose = () => setOpen(false);
+  const [register, setRegister] = useState({
+    name: "",
+    breed: "",
+    tags: "",
+    sex: "",
+    age: "",
+    foto: "",
+  });
+  const isXsScreen = useMediaQuery("(max-width:600px)"); //para saber si la pantalla es pequeña
   // use effect para filtrar los perros por nombre y tags
   useEffect(() => {
     if (buscador.trim() !== "") {
@@ -97,7 +121,6 @@ function App() {
       // agregar a la lista de rechazados
       setListaRechazados([item, ...listaRechazados]);
       setListaRechaAux([item, ...listaRechaAux]);
-
     } else if (listaRechazados.includes(item)) {
       // eliminar de la lista de rechazados
       setListaRechazados(listaRechazados.filter((perro) => perro !== item));
@@ -188,9 +211,22 @@ function App() {
             value={buscador}
             onChange={handleInputChange}
           />
-          <Button sx={{ backgroundColor: "#e8cfc1", color: "#523e27", ":hover": { backgroundColor: "#523e27", color: "#e8cfc1" } }} onClick={() => refetch()}>
-            <ArrowBackIosIcon />
-            <Button/>
+          <div>
+            <Button onClick={handleOpen}>Open modal</Button>
+            <Modal
+              open={open}
+              onClose={handleClose}
+              aria-labelledby="modal-modal-title"
+              aria-describedby="modal-modal-description"
+            >
+              <Box sx={style}>
+                <Typography id="modal-modal-title" variant="h6" component="h2">
+                  Crear Perro
+                </Typography>
+                  
+              </Box>
+            </Modal>
+          </div>
         </Box>
       </Grid>
       {/* perro actual */}
@@ -233,24 +269,27 @@ function App() {
             {loading ? (
               <CircularProgress sx={{ margin: 7 }} />
             ) : (
-              <><CardContent>
+              <>
+                <CardContent>
+                  <Typography gutterBottom variant="h5">
+                    {PerroActual?.name}
+                  </Typography>
 
-                <Typography gutterBottom variant="h5">{PerroActual?.name}</Typography>
-
-                {/* tags */}
-                <Box
-                  sx={{
-                    display: "flex",
-                    justifyContent: "center",
-                    alignItems: "center",
-                    gap: 1,
-                    flexWrap: "wrap",
-                  }}
-                >
-                  {PerroActual?.tags.map((tag) => tagRender(tag))}
-                </Box>
-                <Typography>{PerroActual?.description}</Typography>
-              </CardContent><CardActions sx={{ justifyContent: "space-around" }}>
+                  {/* tags */}
+                  <Box
+                    sx={{
+                      display: "flex",
+                      justifyContent: "center",
+                      alignItems: "center",
+                      gap: 1,
+                      flexWrap: "wrap",
+                    }}
+                  >
+                    {PerroActual?.tags.map((tag) => tagRender(tag))}
+                  </Box>
+                  <Typography>{PerroActual?.description}</Typography>
+                </CardContent>
+                <CardActions sx={{ justifyContent: "space-around" }}>
                   <Tooltip title="Rechazar">
                     <Button
                       onClick={() => rechazarPerro()}
@@ -263,7 +302,7 @@ function App() {
                         ":hover": {
                           backgroundColor: "#e8cfc1",
                           color: "#ac4147",
-                        }
+                        },
                       }}
                     >
                       <HeartBrokenIcon />
@@ -281,13 +320,14 @@ function App() {
                         ":hover": {
                           backgroundColor: "#e8cfc1",
                           color: "#79b5ac",
-                        }
+                        },
                       }}
                     >
                       <FavoriteIcon />
                     </Button>
                   </Tooltip>
-                </CardActions></>
+                </CardActions>
+              </>
             )}
           </Card>
         </Box>
@@ -328,7 +368,7 @@ function App() {
               <Card
                 direction="column"
                 key={item.name}
-                sx={{ width: 500, backgroundColor: "#79b5ac", }}
+                sx={{ width: 500, backgroundColor: "#79b5ac" }}
               >
                 <CardMedia
                   component="img"
@@ -339,7 +379,11 @@ function App() {
                   image={item.imagen}
                 />
                 <CardContent>
-                  <Typography variant="h5" component="div" sx={{ color: "#2BD99" }} >
+                  <Typography
+                    variant="h5"
+                    component="div"
+                    sx={{ color: "#2BD99" }}
+                  >
                     {item.name}
                   </Typography>
                   <Box
@@ -358,7 +402,7 @@ function App() {
                       display: "flex",
                       justifyContent: "space-between",
                       alignItems: "stretch",
-                      flexDirection: isXsScreen ? "column" : "row" ,
+                      flexDirection: isXsScreen ? "column" : "row",
                       gap: 1,
                     }}
                   >
@@ -370,14 +414,20 @@ function App() {
                         }}
                       >
                         <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-                          <Typography sx={{ overflowWrap: "break-spaces" }} >Descripción</Typography>
+                          <Typography sx={{ overflowWrap: "break-spaces" }}>
+                            Descripción
+                          </Typography>
                         </AccordionSummary>
                         <AccordionDetails>
                           <Typography>{item.description}</Typography>
                         </AccordionDetails>
                       </Accordion>
                     </Grid>
-                    <Grid xs={12} md={3} sx={{ display: "flex", justifyContent: "end" }}>
+                    <Grid
+                      xs={12}
+                      md={3}
+                      sx={{ display: "flex", justifyContent: "end" }}
+                    >
                       <Box sx={{ marginTop: "auto" }}>
                         <Tooltip title="Cambiar a rechazados">
                           <Button
@@ -427,7 +477,8 @@ function App() {
           }}
         >
           {listaRechaAux.map((item) => (
-            <ListItem key={item.index}
+            <ListItem
+              key={item.index}
               sx={{
                 display: "flex",
                 justifyContent: "center",
@@ -439,7 +490,7 @@ function App() {
               <Card
                 direction="column"
                 key={item.name}
-                sx={{ width: 500, backgroundColor: "#ac4147", }}
+                sx={{ width: 500, backgroundColor: "#ac4147" }}
               >
                 <CardMedia
                   component="img"
@@ -450,7 +501,11 @@ function App() {
                   image={item.imagen}
                 />
                 <CardContent>
-                  <Typography sx={{ color: "#E8CFC1" }} variant="h5" component="div">
+                  <Typography
+                    sx={{ color: "#E8CFC1" }}
+                    variant="h5"
+                    component="div"
+                  >
                     {item.name}
                     {/* chips de tags */}
                   </Typography>
@@ -470,7 +525,7 @@ function App() {
                       display: "flex",
                       justifyContent: "space-between",
                       alignItems: "stretch",
-                      flexDirection: isXsScreen ? "column" : "row" ,
+                      flexDirection: isXsScreen ? "column" : "row",
                       gap: 1,
                     }}
                   >
@@ -489,7 +544,11 @@ function App() {
                         </AccordionDetails>
                       </Accordion>
                     </Grid>
-                    <Grid xs={12} md={3} sx={{ display: "flex", justifyContent: "end" }}>
+                    <Grid
+                      xs={12}
+                      md={3}
+                      sx={{ display: "flex", justifyContent: "end" }}
+                    >
                       <Box sx={{ marginTop: "auto" }}>
                         <Tooltip title="Cambiar a rechazados">
                           <Button
