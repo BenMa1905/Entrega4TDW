@@ -12,8 +12,10 @@ import {
   ListItem,
   TextField,
   Button,
+  MenuItem,
   Modal,
   Chip,
+  Select,
 } from "@mui/material";
 import FavoriteIcon from "@mui/icons-material/Favorite";
 import HeartBrokenIcon from "@mui/icons-material/HeartBroken";
@@ -38,9 +40,10 @@ const style = {
   left: '50%',
   transform: 'translate(-50%, -50%)',
   width: 400,
-  bgcolor: 'background.paper',
-  border: '2px solid #000',
-  boxShadow: 24,
+  bgcolor: '#ce6857', // Cambiar el color de fondo a #ce6857 (rojo)
+  color: '#e8cfc1', // Cambiar el color del texto a #e8cfc1 (blanco)
+  boxShadow: '0px 3px 20px rgba(0, 0, 0, 0.2)', // Agregar sombra
+  borderRadius: 8, // Agregar borde redondeado
   p: 4,
 };
 
@@ -56,11 +59,41 @@ function App() {
   const [register, setRegister] = useState({
     name: "",
     breed: "",
-    tags: "",
     sex: "",
     age: "",
     foto: "",
   });
+
+
+  const handleSubmmit = async (e) => {
+    e.preventDefault();
+    console.log(register);
+    const resonse = await fetch("http://localhost:3001/api/perros", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(register),
+    });
+
+    const data = await resonse.json();
+    console.log(data);
+
+    setRegister({
+      name: "",
+      breed: "",
+      sex: "",
+      age: "",
+      foto: "",
+    });
+
+    if (data) {
+      alert("Perro registrado correctamente");
+      handleClose();
+    }    
+  };
+
+
   const isXsScreen = useMediaQuery("(max-width:600px)"); //para saber si la pantalla es pequeña
   // use effect para filtrar los perros por nombre y tags
   useEffect(() => {
@@ -222,8 +255,49 @@ function App() {
               <Box sx={style}>
                 <Typography id="modal-modal-title" variant="h6" component="h2">
                   Crear Perro
-                </Typography>
-                  
+                </Typography >
+                  <form  className="">
+                    <TextField
+                      sx={{ width: "100%", marginBottom: 2 }}
+                      id="outlined-basic"
+                      label="Nombre"
+                      variant="outlined"
+                      onChange={(e) => setRegister({ ...register, name: e.target.value })}
+                    />
+                    <TextField
+                      sx={{ width: "100%", marginBottom: 2 }}
+                      id="outlined-basic"
+                      label="Raza"
+                      variant="outlined"
+                      onChange={
+                        (e) => setRegister({ ...register, breed: e.target.value })
+                      }
+                    />
+                    <TextField
+                      sx={{ width: "100%", marginBottom: 2 }}
+                      id="outlined-basic"
+                      label="Edad"
+                      type="number"
+                      variant="outlined"
+                      onChange={
+                        (e) => setRegister({ ...register, age: e.target.value })
+                      }
+                    />
+                    <Select
+                      sx={{ width: "100%", marginBottom: 2 }}
+                      labelId="demo-simple-select-label"
+                      id="demo-simple-select"
+                      value={register.sex}
+                      label="Sexo"
+                      onSelect={
+                        (e)=> setRegister({...register, sex: e.target.value})  
+                      }
+                    >
+                      <MenuItem value={"Male"}>Macho</MenuItem>
+                      <MenuItem value={"Female"}>Hembra</MenuItem>
+                    </Select>
+                    
+                    </form>
               </Box>
             </Modal>
           </div>
